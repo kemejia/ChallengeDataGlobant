@@ -15,7 +15,7 @@ This project is a **ChallengeDataGlobant**
 - **Origin CSV**: AWS S3
 - **Language**: Python
 - **Framework**: 
-- **Database**: PostgreSQL, MySQL
+- **Database**: MySQL
 - **Backup Format**: AVRO
  - **Backup location**: AWS S3 
 ## Setup Instructions
