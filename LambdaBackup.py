@@ -26,11 +26,10 @@ def lambda_handler(event, context):
         port=3306
     )
 
-
     try:
         event_string = json.dumps(event, indent=2)
 
-        date_str = datetime.now().strftime('%Y-%m-%d')
+        date_str = datetime.now().strftime('%Y-%m-%d'_%H-%M')
         body = json.loads(event_string)
         table_api = body.get('table', 'department') # By default is department table
         S3_KEY = f'backup/{table_api}s{date_str}.avro' 
