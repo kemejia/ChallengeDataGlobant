@@ -14,41 +14,21 @@ RDS_USER = 'admin'
 RDS_PASSWORD = 'ChallengeGl0b4nt'
 RDS_DB = 'db-Challenge'
 
-
-
-def validate_csv(csv_content):
-    # Check that the CSV file is not empty and does not exceed 1,000 rows.
-    if len(csv_content) == 0:
-        raise ValueError("'Error: The CSV file is empty.")
-    if len(csv_content) > 10000:
-        raise ValueError("Error: The CSV file has more than 1000 rows.")
-
-
 def lambda_handler(event, context):
-    
     
      # connection to RDS MySQL
     conn = pymysql.connect(
         host = RDS_HOST,
         user = RDS_USER,
-        password = RDS_PASSWORD,    
-        #database = RDS_DB,
+        password = RDS_PASSWORD, 
         port=3306
     )
     
     try:
-        # Get parameters
-            #query_params = event.get('queryStringParameters', {})
-        # Get parameter value
-        #table_api = query_params.get('table', 'default') 
-        #S3_KEY = table_api + '.csv'  
-
         event_string = json.dumps(event, indent=2)
-        print("Evento como string:", event_string)
-
         body = json.loads(event_string)
-        table_api = body.get('table', 'jobs') # By default is jobs table
-        S3_KEY = table_api + '.csv'  
+        table_api = body.get('table', 'department') # By default is department table
+        S3_KEY = table_api + 's.csv'  
 
         # Get CSV file from S3
         csv_file = s3_client.get_object(Bucket=S3_BUCKET, Key=S3_KEY)
@@ -76,16 +56,16 @@ def lambda_handler(event, context):
         else:
             # Insert each row into staging table
             with conn.cursor() as cursor:
-                sql = f"TRUNCATE TABLE stg.stg_{table_api}"
+                sql = f"TRUNCATE TABLE stg.stg_{table_api}s"
                 cursor.execute(sql)
 
                 for row in csv_reader:
                     field =  row[1]
-                    sql = f"INSERT INTO stg.stg_{table_api}(name) VALUES ('{field}')"
+                    sql = f"INSERT INTO stg.stg_{table_api}s({table_api}) VALUES ('{field}')"
                     print(sql)
                     cursor.execute(sql)
                 
-                sql = f"CALL usp_load_{table_api};"
+                sql = f"CALL db.usp_load_{table_api}s;"
                 print(sql)
                 cursor.execute(sql)
         
@@ -97,8 +77,6 @@ def lambda_handler(event, context):
     finally:
         conn.close()
         
-
-
     return {
             #'statusCode': 200,
             #'body': json.dumps('works')
@@ -109,5 +87,13 @@ def lambda_handler(event, context):
             })
         }
     
+############################################################################################
+def validate_csv(csv_content):
+    # Check that the CSV file is not empty and does not exceed 1,000 rows.
+    if len(csv_content) == 0:
+        raise ValueError("'Error: The CSV file is empty.")
+    if len(csv_content) > 1000:
+        raise ValueError("Error: The CSV file has more than 1000 rows.")
+
 
  
