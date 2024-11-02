@@ -4,16 +4,19 @@ import boto3
 import pymysql
 import csv
 
+
+
 # S3 configuration
 S3_BUCKET = 'challengedataglobant'
 S3_KEY = 'hired_employees.csv'  
-s3_client = boto3.client('s3')
 
 # MSSQL configuration
 RDS_HOST = 'db-msql-challenge.c5a6q4eg4u7u.us-east-2.rds.amazonaws.com'
 RDS_USER = 'admin'
 RDS_PASSWORD = 'ChallengeGl0b4nt'
 RDS_DB = 'ChallengeGlobant'
+
+s3_client = boto3.client('s3')
 
 def lambda_handler(event, context):
 
