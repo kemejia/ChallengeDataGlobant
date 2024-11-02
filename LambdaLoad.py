@@ -14,39 +14,18 @@ RDS_USER = 'admin'
 RDS_PASSWORD = 'ChallengeGl0b4nt'
 RDS_DB = 'db-Challenge'
 
-def insert_data(table):
-
-    if table == 'hired_employees':
-        # Insert each row into staging table
-        with conn.cursor() as cursor:
-            sql = "TRUNCATE TABLE db.stg_hired_employees"
-            cursor.execute(sql)
-
-            for row in csv_reader:
-                field1, field2, field3, field4 =  row[1], row[2], row[3], row[4]  
-                sql = "INSERT INTO db.stg_hired_employees (name, datetime, department_id, job_id)  VALUES ( %s, %s, %s, %s)"
-                cursor.execute(sql, (field1, field2, field3, field4))
-            
-            sql = "CALL usp_load_employees;"
-            cursor.execute(sql)
-
-    else:
-        # Insert each row into staging table
-        with conn.cursor() as cursor:
-            sql = "TRUNCATE TABLE db.stg_hired_employees"
-            cursor.execute(sql)
-
-            for row in csv_reader:
-                sql = f"INSERT INTO db.stg_{table}(name) VALUES ({row})"
-                cursor.execute(sql)
-            
-            sql = f"CALL usp_load_{table}s;"
-            cursor.execute(sql)
 
 
+def validate_csv(csv_content):
+    # Check that the CSV file is not empty and does not exceed 1,000 rows.
+    if len(csv_content) == 0:
+        raise ValueError("'Error: The CSV file is empty.")
+    if len(csv_content) > 10000:
+        raise ValueError("Error: The CSV file has more than 1000 rows.")
 
 
 def lambda_handler(event, context):
+    
     
      # connection to RDS MySQL
     conn = pymysql.connect(
@@ -57,12 +36,18 @@ def lambda_handler(event, context):
         port=3306
     )
     
-      try:
+    try:
         # Get parameters
-        query_params = event.get('queryStringParameters', {})
-
+            #query_params = event.get('queryStringParameters', {})
         # Get parameter value
-        table_api = query_params.get('table', 'default') 
+        #table_api = query_params.get('table', 'default') 
+        #S3_KEY = table_api + '.csv'  
+
+        event_string = json.dumps(event, indent=2)
+        print("Evento como string:", event_string)
+
+        body = json.loads(event_string)
+        table_api = body.get('table', 'jobs') # By default is jobs table
         S3_KEY = table_api + '.csv'  
 
         # Get CSV file from S3
@@ -70,31 +55,50 @@ def lambda_handler(event, context):
         csv_content = csv_file['Body'].read().decode('utf-8').splitlines()
         csv_reader = csv.reader(csv_content)
 
-        # request 2.2
-        if len(csv_content) == 0:
-            return {
-                'statusCode': 400,
-                'body': 'Error: The CSV file is empty.'
-            }
+        # Request 2.2
+        validate_csv(csv_content)
 
-        if len(csv_content) > 10000:
-            return {
-                'statusCode': 400,
-                'body': 'Error: Only able to insert batch transactions up to 1000 rows with one request'
-            }
+        # Insert data into staging base on the specified table
+        if table_api == 'hired_employees':
+            # Insert each row into staging table
+            with conn.cursor() as cursor:
+                sql = "TRUNCATE TABLE stg.stg_hired_employees"
+                cursor.execute(sql)
 
-
-#############
-        
+                for row in csv_reader:
+                    field1, field2, field3, field4 =  row[1], row[2], row[3], row[4]  
+                    sql = "INSERT INTO stg.stg_hired_employees (name, datetime, department_id, job_id)  VALUES ( %s, %s, %s, %s)"
+                    cursor.execute(sql, (field1, field2, field3, field4))
                 
+                sql = "CALL usp_load_employees;"
+                cursor.execute(sql)
+
+        else:
+            # Insert each row into staging table
+            with conn.cursor() as cursor:
+                sql = f"TRUNCATE TABLE stg.stg_{table_api}"
+                cursor.execute(sql)
+
+                for row in csv_reader:
+                    field =  row[1]
+                    sql = f"INSERT INTO stg.stg_{table_api}(name) VALUES ('{field}')"
+                    print(sql)
+                    cursor.execute(sql)
+                
+                sql = f"CALL usp_load_{table_api};"
+                print(sql)
+                cursor.execute(sql)
+        
         conn.commit()
-    
+
     except Exception as e:
         print("Error:", e)
         raise
     finally:
         conn.close()
         
+
+
     return {
             #'statusCode': 200,
             #'body': json.dumps('works')
