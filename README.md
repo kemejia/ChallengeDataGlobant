@@ -29,7 +29,7 @@ This API exposes three POST endpoints to interact with the database:
    - AWS Secrets Manager
       We use AWS Secrets Manager to manage database credentials securely. It encrypts sensitive data and automatically rotates passwords, enhancing our security by ensuring that credentials are always up-to-date.
 
-# Dashboard
+                        # Dashboard
 
 <p align="center">
   <img src="https://github.com/kemejia/ChallengeDataGlobant/blob/main/PowerBI/CaptureDashboardHiring.png?raw=true" alt="Hiring Insights" width="700">
