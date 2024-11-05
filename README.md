@@ -32,7 +32,7 @@ This API exposes three POST endpoints to interact with the database:
 # Dashboard
 
 <p align="center">
-  <img src="https://github.com/kemejia/ChallengeDataGlobant/blob/main/PowerBI/CaptureDashboardHiring.png?raw=true" alt="Hiring Insights" width="500">
+  <img src="https://github.com/kemejia/ChallengeDataGlobant/blob/main/PowerBI/CaptureDashboardHiring.png?raw=true" alt="Hiring Insights" width="700">
 </p>
 
 ## Technical Requirements
