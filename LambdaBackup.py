@@ -5,38 +5,31 @@ import io
 import boto3
 from datetime import datetime
 
-# S3 configuration
 S3_BUCKET = 'challengedataglobant'
-s3_client = boto3.client('s3')
-
-# MySQL configuration
-RDS_HOST = 'dbchallengeglobant.c5a6q4eg4u7u.us-east-2.rds.amazonaws.com'
-RDS_USER = 'admin'
-RDS_PASSWORD = 'ChallengeGl0b4nt'
-#RDS_DB = 'db-Challenge'
-
+SECRET_NAME = "mysql/credentials"  
 
 def lambda_handler(event, context):
 
-     # connection to RDS MySQL
+    # MySQL configuration with AWS Secrets
+    db_credentials = get_db_credentials(SECRET_NAME)
     conn = pymysql.connect(
-        host = RDS_HOST,
-        user = RDS_USER,
-        password = RDS_PASSWORD,    
+        host=db_credentials["host"],
+        user=db_credentials["user"],
+        password=db_credentials["password"],
         port=3306
     )
 
     try:
+        
+        date_str = datetime.now().strftime('%Y-%m-%d_%H-%M') # Date
         event_string = json.dumps(event, indent=2)
-
-        date_str = datetime.now().strftime('%Y-%m-%d'_%H-%M')
         body = json.loads(event_string)
-        table_api = body.get('table', 'department') # By default is department table
-        S3_KEY = f'backup/{table_api}s{date_str}.avro' 
+        table_api = body.get('table', 'departments') # By default is department table
+        s3_key = f'backup/{table_api}{date_str}.avro' 
 
         with conn.cursor() as cursor:
             # Get info
-            cursor.execute(f"SELECT * FROM db.{table_api}s")
+            cursor.execute(f"SELECT * FROM db.{table_api}")
             rows = cursor.fetchall()
             columns = [desc[0] for desc in cursor.description]
 
@@ -45,28 +38,38 @@ def lambda_handler(event, context):
             avro_bytes = convert_to_avro(records, columns, cursor, table_api) 
             
             s3_client = boto3.client('s3')
-            s3_client.put_object(Bucket=S3_BUCKET, Key=S3_KEY, Body=avro_bytes)
-    
+            s3_client.put_object(Bucket=S3_BUCKET, Key=s3_key, Body=avro_bytes)
+
+            # Check available tables
+            cursor.execute(f"""SELECT table_name 
+                            FROM information_schema.tables 
+                            WHERE table_schema = 'db' and table_type = 'BASE TABLE';""")
+            rows = cursor.fetchall()
+            tables_available = [item[0] for item in rows]
+            check_tables_available(tables_available, table_api)
+            
+            
     finally:
         conn.close()
 
     return {
         'statusCode': 200,
-        'body': json.dumps('Backup sucessfully!')
+        'body': json.dumps(f'Backup sucessfully! Table: 
+         Path: s3://{S3_BUCKET}/{s3_key}/')
     }
     
 ############################################################################################
 def convert_to_avro(records, columns, cursor, table):
     
     column_types = {}
-    table_avro = f"DESCRIBE db.{table}s"
+    table_avro = f"DESCRIBE db.{table}"
     cursor.execute(table_avro)
     for row in cursor.fetchall():
-        column_name = row[0]  # nombre de la columna
-        column_type = row[1]  # tipo de columna
+        column_name = row[0]  # Column name
+        column_type = row[1]  # Column type
         column_types[column_name] = map_mysql_to_avro(column_type)
     
-    # Crear el esquema AVRO
+    # AVRO schema
     schema = {
         'type': 'record',
         'name': 'Record',
@@ -85,3 +88,27 @@ def map_mysql_to_avro(mysql_type):
         return 'string'
     else:
         return 'string'  # By default
+
+############################################################################################
+def check_tables_available(tables_available, table):
+    if table not in tables_available:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"error": f"La tabla '{table}' no existe."})
+        }
+
+############################################################################################
+def get_db_credentials(secret_name):
+    client = boto3.client("secretsmanager")
+    
+    # Recover the secret
+    response = client.get_secret_value(SecretId=secret_name)
+    
+    # Parse the secret JSON
+    secret = json.loads(response["SecretString"])
+    return {
+        "host": secret["host"],
+        "user": secret["username"],
+        "password": secret["password"],
+        "database": secret["dbname"]
+    }

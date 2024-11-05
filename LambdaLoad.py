@@ -4,26 +4,20 @@ import boto3
 import pymysql
 import csv
 
-# S3 configuration
 S3_BUCKET = 'challengedataglobant'
-s3_client = boto3.client('s3')
-
-# MySQL configuration
-RDS_HOST = 'dbchallengeglobant.c5a6q4eg4u7u.us-east-2.rds.amazonaws.com'
-RDS_USER = 'admin'
-RDS_PASSWORD = 'ChallengeGl0b4nt'
-RDS_DB = 'db-Challenge'
+SECRET_NAME = "mysql/credentials"  
 
 def lambda_handler(event, context):
     
-     # connection to RDS MySQL
+     # MySQL configuration with AWS Secrets
+    db_credentials = get_db_credentials(SECRET_NAME)
     conn = pymysql.connect(
-        host = RDS_HOST,
-        user = RDS_USER,
-        password = RDS_PASSWORD, 
+        host=db_credentials["host"],
+        user=db_credentials["user"],
+        password=db_credentials["password"],
         port=3306
     )
-    
+
     try:
         event_string = json.dumps(event, indent=2)
         body = json.loads(event_string)
@@ -31,6 +25,7 @@ def lambda_handler(event, context):
         S3_KEY = table_api + 's.csv'  
 
         # Get CSV file from S3
+        s3_client = boto3.client('s3')
         csv_file = s3_client.get_object(Bucket=S3_BUCKET, Key=S3_KEY)
         csv_content = csv_file['Body'].read().decode('utf-8').splitlines()
         csv_reader = csv.reader(csv_content)
@@ -78,12 +73,9 @@ def lambda_handler(event, context):
         conn.close()
         
     return {
-            #'statusCode': 200,
-            #'body': json.dumps('works')
             'statusCode': 200,
             'body': json.dumps({
-                'message': 'Información de la solicitud recibida',
-                'event': event  # Retornamos el event completo
+                'message': f'Load table {table_api}s sucessfully'
             })
         }
     
@@ -95,5 +87,20 @@ def validate_csv(csv_content):
     if len(csv_content) > 1000:
         raise ValueError("Error: The CSV file has more than 1000 rows.")
 
+############################################################################################
+def get_db_credentials(secret_name):
+    client = boto3.client("secretsmanager")
+    
+    # Recover the secret
+    response = client.get_secret_value(SecretId=secret_name)
+    
+    # Parse the secret JSON
+    secret = json.loads(response["SecretString"])
+    return {
+        "host": secret["host"],
+        "user": secret["username"],
+        "password": secret["password"],
+        "database": secret["dbname"]
+    }
 
  
