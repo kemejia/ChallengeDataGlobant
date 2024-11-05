@@ -1,7 +1,14 @@
 CREATE DEFINER=`admin`@`%` PROCEDURE `usp_load_employees`()
 BEGIN
-    DECLARE exists_data INT;
+	DECLARE exists_data INT;
+    
+    # Update to remove quotes in stg.stg_hired_employee
+	UPDATE stg.stg_hired_employee
+	SET name = REPLACE(name, "'", "")
+    WHERE name LIKE '%''%';
+    
 	SELECT COUNT(*) INTO exists_data FROM stg.stg_hired_employees AS stg WHERE NOT EXISTS (SELECT db.name FROM db.hired_employees AS db WHERE db.name = stg.name);
+    
 	select 'afuera' as info;
     IF exists_data > 0 THEN
 		select 'dentro' as info;
@@ -89,6 +96,12 @@ BEGIN
 			AND stg.job_id IN (SELECT job_id FROM db.hired_employees AS db) ;
 
 		DROP TABLE IF EXISTS TMPlog_errors;
+        
+        # Last update to remove quotes
+        UPDATE db.hired_employees
+        SET name = REPLACE(name, "'", "")
+        WHERE name LIKE '%''%';
+        
         
     END IF;
 END
