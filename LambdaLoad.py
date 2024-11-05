@@ -34,22 +34,23 @@ def lambda_handler(event, context):
         validate_csv(csv_content)
 
         # Insert data into staging base on the specified table
-        if table_api == 'hired_employees':
+        if table_api == 'hired_employee':
             # Insert each row into staging table
             with conn.cursor() as cursor:
                 sql = "TRUNCATE TABLE stg.stg_hired_employees"
                 cursor.execute(sql)
-
+                
                 for row in csv_reader:
                     field1, field2, field3, field4 =  row[1], row[2], row[3], row[4]  
-                    sql = "INSERT INTO stg.stg_hired_employees (name, datetime, department_id, job_id)  VALUES ( %s, %s, %s, %s)"
-                    cursor.execute(sql, (field1, field2, field3, field4))
+                    sql = f"INSERT INTO stg.stg_hired_employees (name, datetime, department_id, job_id)  VALUES ( '{field1}', '{field2}', '{field3}', '{field4}')"
+                    cursor.execute(sql)
                 
-                sql = "CALL usp_load_employees;"
+                sql = "CALL db.usp_load_employees;"
                 cursor.execute(sql)
 
         else:
             # Insert each row into staging table
+            print('inside de else')
             with conn.cursor() as cursor:
                 sql = f"TRUNCATE TABLE stg.stg_{table_api}s"
                 cursor.execute(sql)
@@ -57,7 +58,6 @@ def lambda_handler(event, context):
                 for row in csv_reader:
                     field =  row[1]
                     sql = f"INSERT INTO stg.stg_{table_api}s({table_api}) VALUES ('{field}')"
-                    print(sql)
                     cursor.execute(sql)
                 
                 sql = f"CALL db.usp_load_{table_api}s;"
@@ -102,5 +102,6 @@ def get_db_credentials(secret_name):
         "password": secret["password"],
         "database": secret["dbname"]
     }
+
 
  
