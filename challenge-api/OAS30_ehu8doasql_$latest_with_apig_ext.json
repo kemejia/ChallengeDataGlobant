@@ -1,0 +1,66 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "challenge-api",
+    "version" : "2024-11-05 20:55:09UTC"
+  },
+  "servers" : [ {
+    "url" : "https://ehu8doasql.execute-api.us-east-2.amazonaws.com/{basePath}",
+    "variables" : {
+      "basePath" : {
+        "default" : ""
+      }
+    }
+  } ],
+  "paths" : {
+    "/backup" : {
+      "post" : {
+        "responses" : {
+          "default" : {
+            "description" : "Default response for POST /backup"
+          }
+        },
+        "x-amazon-apigateway-integration" : {
+          "payloadFormatVersion" : "2.0",
+          "type" : "aws_proxy",
+          "httpMethod" : "POST",
+          "uri" : "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:905418386911:function:backup-challenge/invocations",
+          "connectionType" : "INTERNET"
+        }
+      }
+    },
+    "/loadbd" : {
+      "post" : {
+        "responses" : {
+          "default" : {
+            "description" : "Default response for POST /loadbd"
+          }
+        },
+        "x-amazon-apigateway-integration" : {
+          "payloadFormatVersion" : "2.0",
+          "type" : "aws_proxy",
+          "httpMethod" : "POST",
+          "uri" : "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:905418386911:function:loadbd-challenge/invocations",
+          "connectionType" : "INTERNET"
+        }
+      }
+    },
+    "/restore" : {
+      "post" : {
+        "responses" : {
+          "default" : {
+            "description" : "Default response for POST /restore"
+          }
+        },
+        "x-amazon-apigateway-integration" : {
+          "payloadFormatVersion" : "2.0",
+          "type" : "aws_proxy",
+          "httpMethod" : "POST",
+          "uri" : "arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:905418386911:function:restore-challenge/invocations",
+          "connectionType" : "INTERNET"
+        }
+      }
+    }
+  },
+  "x-amazon-apigateway-importexport-version" : "1.0"
+}
