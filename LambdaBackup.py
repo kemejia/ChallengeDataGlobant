@@ -54,8 +54,7 @@ def lambda_handler(event, context):
 
     return {
         'statusCode': 200,
-        'body': json.dumps(f'Backup sucessfully! Table: 
-         Path: s3://{S3_BUCKET}/{s3_key}/')
+        'body': json.dumps(f'Backup sucessfully! Table: {table_api} Path: s3://{S3_BUCKET}/{s3_key}/')
     }
     
 ############################################################################################
