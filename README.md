@@ -1,5 +1,7 @@
 # ChallengeDataGlobant
-This project is a **ChallengeDataGlobant** 
+This project is a data engineering challenge centered on implementing a data migration solution. The goal was to build a Proof of Concept (PoC) for migrating historical data from csv to a new database while supporting ongoing data management and enabling efficient querying for reporting and analysis.
+
+This challenge tests skills in data migration, API development, and reporting, with a strong emphasis on data validation, scalability, and data integrity
 
 ## Project Overview
 
@@ -45,7 +47,7 @@ This API exposes three POST endpoints to interact with the database:
 - **Visualization Tool**: Power BI
 - **Limitaciones:**: Support batch insertion (1 to 1000 rows) in a single request.
    
-## Setup Instructions
+
 
  Clone the repository:
    ```bash
