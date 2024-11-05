@@ -22,6 +22,9 @@ This project is a **ChallengeDataGlobant**
    - AWS Secrets Manager
    We use AWS Secrets Manager to securely manage database credentials. It encrypts sensitive data and automatically rotates passwords, enhancing our security by ensuring that credentials are always up-to-date.
 
+**Dashboard**:
+
+<img width="560" alt="CaptureDashboardHiring" src="https://github.com/user-attachments/assets/90340b18-742d-4dda-b7c1-2c301ab62019">
 
 ## Technical Requirements
 - **Origin CSV**: AWS S3
@@ -32,8 +35,7 @@ This project is a **ChallengeDataGlobant**
  - **Backup location**: AWS S3 
 ## Setup Instructions
 
-**Dashboard**
-<img width="560" alt="CaptureDashboardHiring" src="https://github.com/user-attachments/assets/90340b18-742d-4dda-b7c1-2c301ab62019">
+
 
  
  Clone the repository:
