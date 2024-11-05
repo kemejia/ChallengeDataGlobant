@@ -3,8 +3,9 @@ import pymysql
 import fastavro
 import csv
 import boto3
+import os
 from datetime import datetime
-from io import BytesIO
+from io import BytesIO, StringIO
 
 
 S3_BUCKET = 'challengedataglobant'
@@ -26,31 +27,42 @@ def lambda_handler(event, context):
         body = json.loads(event_string)
         backup_api = body.get('backup') 
         avro_file_key = f"backup/{backup_api}.avro"
-        table_delete = substring = backup_api.split("20")[0]
-        print("table_delete: ")
-        print(table_delete)
-
+        table_db = substring = backup_api.split("20")[0]
+        print(table_db)
+        stg_table = 'stg.stg_' + table_db
+        
         # Download avro file from S3
         s3_client = boto3.client('s3')
         avro_obj = s3_client.get_object(Bucket=S3_BUCKET, Key=avro_file_key)
-        avro_data = avro_obj['Body'].read()
-        #avro_byte = avro_data.encode('utf-8')
+        avro_data = BytesIO(avro_obj['Body'].read())
         
-        csv_file = avro_to_csv(avro_data)
-
-        # Leer el CSV en memoria y cargar en MySQL
-        with conn.cursor() as cursor:
+        reader = fastavro.reader(avro_data)
   
-            sql = f"TRUNCATE TABLE stg.stg_{table_delete}s"
+        # Funtion avro to csv
+        csv_data = avro_to_csv(reader)
+
+        # Read CSV and load into MySQL
+        with conn.cursor() as cursor:
+            sql = f"TRUNCATE TABLE {stg_table}"
+            print(sql)
             cursor.execute(sql)
 
-            csv_reader = csv.reader(csv_file.getvalue().decode().splitlines())
-            headers = next(csv_reader)  
-            insert_query = f"INSERT INTO {os.environ['DB_TABLE']} ({','.join(headers)}) VALUES ({','.join(['%s'] * len(headers))})"
-            
+            csv_reader = csv.reader(csv_data.getvalue().splitlines())
+            first_row = next(csv_reader) # Without headers, it read the firts row to count the columns
+            placeholders = ','.join(["'%s'"] * len(first_row))
+            print(placeholders)
+            insert_query = f"INSERT INTO {stg_table} VALUES({placeholders})"
+            print('query:')
+           
+
             for row in csv_reader:
-                cursor.execute(insert_query, row)
-                
+                print(insert_query % tuple(row)) 
+                query = insert_query % tuple(row)
+                print(query)
+                cursor.execute(query)
+            
+            # execute usp_restore
+            cursor.callproc('db.usp_restore', (table_db,))
             conn.commit()
 
     finally:
@@ -58,12 +70,35 @@ def lambda_handler(event, context):
 
     return {
         'statusCode': 200,
-        'body': json.dumps(f'Backup table {table_delete} sucessfully!')
+        'body': json.dumps(f'Backup table db.{table_db} sucessfully!')
     }
     
 ############################################################################################
-def avro_to_csv(avro_data):
-    avro_file = BytesIO(avro_data)
+def avro_to_csv(reader):
+     # Crear un flujo de texto para almacenar los datos CSV
+    csv_output = StringIO()
+    writer = None
+    
+    # Leer el archivo Avro y escribir en CSV
+    #reader = fastavro.reader(avro_data)
+    for record in reader:
+        # Escribir encabezados en el archivo CSV la primera vez
+        if writer is None:
+            writer = csv.DictWriter(csv_output, fieldnames=record.keys())
+            #writer.writeheader()
+        
+        # Escribir cada registro en el CSV
+        writer.writerow(record)
+    
+    # Regresar los datos CSV como un flujo
+    csv_output.seek(0)
+    return csv_output
+
+
+
+    """
+    #avro_byte = avro_data.encode('utf-8')
+    avro_file = BytesIO(avro_byte)
     reader = fastavro.reader(avro_file)
     
     csv_file = BytesIO()
@@ -80,6 +115,7 @@ def avro_to_csv(avro_data):
     
     csv_file.seek(0)
     return csv_file
+    """
 
 ############################################################################################
 def get_db_credentials(secret_name):
