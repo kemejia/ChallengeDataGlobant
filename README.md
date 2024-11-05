@@ -7,28 +7,18 @@ This project is a **ChallengeDataGlobant**
    - Import historical data from CSV files into a SQL database, and create queries and dashboards to visualize and analyze this information.
 
 2. **API Endpoints**:
-
-## Rutas de la API
-
-| Método | Ruta          | Descripción                               | Parámetros         | Respuesta        | Códigos de estado |
-|--------|---------------|-------------------------------------------|-------------------|-------------------|-------------------|
-| GET    | /usuarios     | Obtiene una lista de todos los usuarios.    |                   | Lista de usuarios | 200               |
-| POST   | /usuarios     | Crea un nuevo usuario.                    | {nombre, email}   | Nuevo usuario    | 201               |
-| PUT    | /usuarios/{id} | Actualiza un usuario existente.            | {id, nombre, email} | Usuario actualizado | 200               |
+ - The file to be loaded must be placed in the following S3 source: **s3://challengedataglobant/**.
+ - Support batch insertion (1 to 1000 rows) in a single request.
+ - 
+* **Endpoint:** https://ehu8doasql.execute-api.us-east-2.amazonaws.com/
 
 This API exposes three POST endpoints to interact with the database:
 
-#### a. Load Data into a Table
-* **Endpoint:** https://ehu8doasql.execute-api.us-east-2.amazonaws.com/loadbd
-* **Request Body:**
-  ```json
-  { "table": "hired_employees" }
-
-
-  
-   - The file to be loaded must be placed in the following S3 source: **s3://challengedataglobant/**.
-   - For load purposes, please include the singular form of the table name (without the final "s") in the body of the POST request, formatted as follows: { "table": "hired_employee" }
-   - Support batch insertion (1 to 1000 rows) in a single request.
+| Method | Route          | Description                               | Parameters         | Rules        | Status Codes |
+|--------|---------------|-------------------------------------------|-------------------|-------------------|-------------------|
+| POST    | /loadbd     | Load the date into database.     |  {table} eg: { "table": "**hired_employee**" }  | The table name in singular form (without the final "s") | 200, 400 |
+| POST   | /backup     | Create a backup in avro format in AWS S3.  | {table} eg: { "table": "**hired_employees**" }  | The table name in the database| 200, 400 |
+| POST    | /restore | Restore the table from an Avro backup.          | {table} eg: { "backup": "**hired_employees2024-11-05_20-18**" } | The table name in the database | 200, 400|
 
 3. **Backup and Restore in AVRO**:
    - For backup purposes, please include the exact table name in the body of the POST request, formatted as follows: { "table": "hired_employees" }
@@ -37,11 +27,9 @@ This API exposes three POST endpoints to interact with the database:
      
 4.  **Security**:
    - IP Configuration
-   Configuring allowed IP addresses is essential for controlling access to our resources and minimizing unauthorized access. Please provide your IP address to enable access. 
+      Configuring allowed IP addresses is essential for controlling access to our resources and minimizing unauthorized access. Please provide your IP address to enable access. 
    - AWS Secrets Manager
-   We use AWS Secrets Manager to manage database credentials securely. It encrypts sensitive data and automatically rotates passwords, enhancing our security by ensuring that credentials are always up-to-date.
-
-5. 
+      We use AWS Secrets Manager to manage database credentials securely. It encrypts sensitive data and automatically rotates passwords, enhancing our security by ensuring that credentials are always up-to-date.
 
 # Dashboard
 
