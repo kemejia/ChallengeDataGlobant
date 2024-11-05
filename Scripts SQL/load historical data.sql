@@ -2205,3 +2205,9 @@ INSERT INTO db.hired_employees(id,name,datetime,department_id,job_id)VALUES(1996
 INSERT INTO db.hired_employees(id,name,datetime,department_id,job_id)VALUES(1997,'Wilek Yurkevich','2021-05-04T12:19:50Z',2,132);
 INSERT INTO db.hired_employees(id,name,datetime,department_id,job_id)VALUES(1998,'Jerry Yven','2021-10-03T14:12:50Z',7,100);
 INSERT INTO db.hired_employees(id,name,datetime,department_id,job_id)VALUES(1999,'Jerri Zebedee','2022-01-18T10:47:37Z',8,80);
+
+
+# Last update to remove quotes
+UPDATE db.hired_employees
+SET name = REPLACE(name, "'", "")
+WHERE name LIKE '%''%';
