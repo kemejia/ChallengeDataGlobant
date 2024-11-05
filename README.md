@@ -20,7 +20,7 @@ This project is a **ChallengeDataGlobant**
    - IP Configuration
    Configuring allowed IP addresses is essential for controlling access to our resources and minimizing unauthorized access. Please provide your IP address to enable access. 
    - AWS Secrets Manager
-   We use AWS Secrets Manager to securely manage database credentials. It encrypts sensitive data and automatically rotates passwords, enhancing our security by ensuring that credentials are always up-to-date.
+   We use AWS Secrets Manager to manage database credentials securely. It encrypts sensitive data and automatically rotates passwords, enhancing our security by ensuring that credentials are always up-to-date.
 
 **Dashboard**:
 
@@ -32,12 +32,12 @@ This project is a **ChallengeDataGlobant**
 - **API**: AWS API Getaway
 - **Database**: AWS RDS - MySQL
 - **Backup Format**: AVRO
- - **Backup location**: AWS S3 
+ - **Backup location**: AWS S3
+ - **Visualization Tool**: Power BI
+
+   
 ## Setup Instructions
 
-
-
- 
  Clone the repository:
    ```bash
    git clone https://github.com/username/data-challenge.git
