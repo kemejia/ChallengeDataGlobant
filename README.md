@@ -6,7 +6,26 @@ This project is a **ChallengeDataGlobant**
 1. **Historical Data Migration**:
    - Import historical data from CSV files into a SQL database, and create queries and dashboards to visualize and analyze this information.
 
-2. **REST API for New Transactions**:
+2. **API Endpoints**:
+
+## Rutas de la API
+
+| Método | Ruta          | Descripción                               | Parámetros         | Respuesta        | Códigos de estado |
+|--------|---------------|-------------------------------------------|-------------------|-------------------|-------------------|
+| GET    | /usuarios     | Obtiene una lista de todos los usuarios.    |                   | Lista de usuarios | 200               |
+| POST   | /usuarios     | Crea un nuevo usuario.                    | {nombre, email}   | Nuevo usuario    | 201               |
+| PUT    | /usuarios/{id} | Actualiza un usuario existente.            | {id, nombre, email} | Usuario actualizado | 200               |
+
+This API exposes three POST endpoints to interact with the database:
+
+#### a. Load Data into a Table
+* **Endpoint:** https://ehu8doasql.execute-api.us-east-2.amazonaws.com/loadbd
+* **Request Body:**
+  ```json
+  { "table": "hired_employees" }
+
+
+  
    - The file to be loaded must be placed in the following S3 source: **s3://challengedataglobant/**.
    - For load purposes, please include the singular form of the table name (without the final "s") in the body of the POST request, formatted as follows: { "table": "hired_employee" }
    - Support batch insertion (1 to 1000 rows) in a single request.
@@ -22,7 +41,9 @@ This project is a **ChallengeDataGlobant**
    - AWS Secrets Manager
    We use AWS Secrets Manager to manage database credentials securely. It encrypts sensitive data and automatically rotates passwords, enhancing our security by ensuring that credentials are always up-to-date.
 
-**Dashboard**:
+5. 
+
+# Dashboard
 
 <img width="560" alt="CaptureDashboardHiring" src="https://github.com/user-attachments/assets/90340b18-742d-4dda-b7c1-2c301ab62019">
 
