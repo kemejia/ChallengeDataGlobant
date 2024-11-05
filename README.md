@@ -7,9 +7,7 @@ This project is a **ChallengeDataGlobant**
    - Import historical data from CSV files into a SQL database, and create queries and dashboards to visualize and analyze this information.
 
 2. **API Endpoints**:
- - The file to be loaded must be placed in the following S3 source: **s3://challengedataglobant/**.
- - Support batch insertion (1 to 1000 rows) in a single request.
- - 
+   
 * **Endpoint:** https://ehu8doasql.execute-api.us-east-2.amazonaws.com/
 
 This API exposes three POST endpoints to interact with the database:
@@ -33,17 +31,19 @@ This API exposes three POST endpoints to interact with the database:
 
 # Dashboard
 
-<img width="560" alt="CaptureDashboardHiring" src="https://github.com/user-attachments/assets/90340b18-742d-4dda-b7c1-2c301ab62019">
+<p align="center">
+  <img src="[URL_DE_LA_IMAGEN](https://github.com/kemejia/ChallengeDataGlobant/blob/main/PowerBI/CaptureDashboardHiring.png?raw=true)" alt="Hiring Insights" width="300">
+</p>
 
 ## Technical Requirements
-- **Origin CSV**: AWS S3
+- **Origin CSV**: AWS S3 source: **s3://challengedataglobant/**.
 - **Language**: Python
 - **API**: AWS API Getaway
 - **Database**: AWS RDS - MySQL
 - **Backup Format**: AVRO
- - **Backup location**: AWS S3
- - **Visualization Tool**: Power BI
-
+- **Backup location**: AWS S3 source: **s3://challengedataglobant/backup**.
+- **Visualization Tool**: Power BI
+- **Limitaciones:**: Support batch insertion (1 to 1000 rows) in a single request.
    
 ## Setup Instructions
 
